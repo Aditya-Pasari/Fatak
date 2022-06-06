@@ -1,0 +1,45 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <form method="POST" action="">
+        {% csrf_token %}
+        <br>
+        <table>
+            <tr>
+                <td><labeL><b>Username: </b></labeL></td>
+                <td><input type="text" name="username" placeholder="Enter Username"> </td>
+            </tr>
+            <tr>
+                <td><labeL><b>Password: </b></labeL></td>
+                <td><input type="password" name="password" placeholder="Enter Password"> </td>
+            </tr>
+           
+        </table>
+        <br>
+        <button type="submit" value="Login"> Login </button>
+
+    </form> <br>
+
+    <p> <b>Havent signed up yet?</b></p>
+    <a href="{% url 'register' %}"> Register Here</a>
+
+
+</div><br>
+
+<div class="container">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <b>
+            <li>{{ message }}</li>
+        </b>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% endblock content %}
+</div>
