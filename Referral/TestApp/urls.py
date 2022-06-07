@@ -10,5 +10,8 @@ urlpatterns = [
     path('register/', views.registerPage, name="register"),
     path('logout/', views.logoutUser, name="logout"),
 
+    path('get_ref_code/', views.getReferralCode, name="getReferralCode"),
+
+
 
 ]
