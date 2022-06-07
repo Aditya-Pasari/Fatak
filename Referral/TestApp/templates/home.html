@@ -4,6 +4,16 @@
 <div>
     <p>
         This is homepage..
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <b>
+                <h2><li>{{ message }}</li></h2>
+            </b>
+            {% endfor %}
+        </ul>
+        {% endif %}
     </p>
 
 </div>

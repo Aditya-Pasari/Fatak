@@ -14,9 +14,15 @@
             {% if request.user.is_authenticated %}
             <div class="header__user">
                 
-                    <div class="avatar avatar--medium active">
-                        <img src="{{request.user.avatar.url}}" />
-                    </div>
+                <div>
+                    <a href="{% url 'getReferralCode' %}" > Get Ref Code </a>
+                </div>
+
+                <div class="avatar avatar--medium active">
+                    <img src="{{request.user.avatar.url}}" />
+                </div>
+
+
                     <p>{{request.user.username}} <span>@{{request.user.username}}</span></p>
                 
                 <button class="dropdown-button">
