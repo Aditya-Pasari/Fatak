@@ -10,6 +10,11 @@ from django.db.models import Sum
 from django.utils import timezone
 import datetime
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from .serializers import ReferralCodeSerializer, UserSerializer
+
 
 # Create your views here.
 def home(request):
@@ -87,7 +92,7 @@ def registerPage(request):
                 r.save()
                 messages.success(request, "Total amount received by Original referrer in last 5 minutes is Rs " + str(user_amount + referrer_amount))
                 messages.success(request, "Total amount received by Original referrer uptil now is Rs : " + str(total_user_amount + referrer_amount)) 
-                messages.success(request, "You were referred by" + str(referralCode.referrer))
+                messages.success(request, "You were referred by " + str(referralCode.referrer))
                 messages.success(request, "You received Rs " + str(r.referee_amount))
             else:
                 messages.success(request, "No referral code was used during user registration.")
@@ -126,6 +131,33 @@ def getReferralCode(request):
 
    
     return redirect('home')
+
+
+
+
+
+#########################################################################################
+################################# APIs ##################################################
+#########################################################################################
+
+@api_view(['GET'])
+def api_get_referral_code(request, user):
+    referralCode = ReferralCode.objects.get(referrer=user)
+    serializer = ReferralCodeSerializer(instance=referralCode)
+    
+    return Response(serializer.data)
+    #return Response({'referral_code' : referralCode.referral_code,
+    #                'referrer_id' : referralCode.referrer,
+     #               })
+
+
+
+
+
+#########################################################################################
+############################# END OF  APIs ##############################################
+#########################################################################################
+
 
 
 

@@ -42,7 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'TestApp.apps.TestappConfig',
+    'rest_framework',                               # Need to add DRF
 ]
+
+
+REST_FRAMEWORK = {
+    
+    # Check this
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

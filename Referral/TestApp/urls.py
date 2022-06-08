@@ -13,5 +13,5 @@ urlpatterns = [
     path('get_ref_code/', views.getReferralCode, name="getReferralCode"),
 
 
-
+    path('api/get_referral_code/<str:user>/', views.api_get_referral_code, name='api_get_referral_code'),
 ]
