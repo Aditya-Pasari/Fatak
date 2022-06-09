@@ -9,9 +9,12 @@ from TestApp.models import Referral, ReferralCode
 from django.db.models import Sum
 from django.utils import timezone
 import datetime
+import json 
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.http import JsonResponse
 from rest_framework import status
 from .serializers import ReferralCodeSerializer, UserSerializer, ReferralSerializer
 
@@ -187,6 +190,7 @@ def api_get_referral(request, referee):
 
 
 @api_view(['GET'])
+@permission_classes((IsAuthenticated,))
 def api_get_referrer_stats(request, referrer):
     #try:   
         five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
@@ -196,13 +200,32 @@ def api_get_referrer_stats(request, referrer):
         total_amount_earned = Referral.objects.filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
         if(total_amount_earned is None):
             total_amount_earned = 0
-                
-
-        #serializer = ReferralSerializer(instance=referral)
+ 
         return Response({'amount_earned__current_month': amount_earned__current_month,
                         'total_amount_earned': total_amount_earned})
-    #except Referral.DoesNotExist:
-    #    return Response(status = status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated,))
+def api_get_all_referrers(request):
+    queryset = Referral.objects.all()
+    serializer = ReferralSerializer(queryset, many = True)
+
+    all_users = {}
+
+    for q in queryset:
+        if(q.referrer.id in all_users):
+            all_users[q.referrer.id]['users_registered'] += 1
+            all_users[q.referrer.id]['total_amount'] += q.referrer_amount
+        else:
+            all_users[q.referrer.id] = {}
+            all_users[q.referrer.id]['users_registered'] = 1
+            all_users[q.referrer.id]['total_amount'] = q.referrer_amount
+
+    response_dict = dict(sorted(all_users.items(), key=lambda item: -item[1]['users_registered']))
+
+
+    return JsonResponse(response_dict)
     
     
 #########################################################################################

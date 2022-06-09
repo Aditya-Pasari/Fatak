@@ -23,4 +23,6 @@ urlpatterns = [
     path('', include('TestApp.urls')),
     path('', include('account.urls')),
 
+    # REST-framework
+    path('api/account/', include('account.api.urls', 'account_api')),
 ]

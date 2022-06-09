@@ -17,7 +17,6 @@ class ReferralSerializer(serializers.ModelSerializer):
 
 
 
-
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:

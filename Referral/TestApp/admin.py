@@ -12,7 +12,6 @@ class ReferralCodeAdmin(admin.ModelAdmin):
     readonly_fields = ('created', 'updated')
 
 
-
 #admin.site.unregister(User)
 #admin.site.register(User, CustomUserAdmin)
 admin.site.register(ReferralCode, ReferralCodeAdmin)

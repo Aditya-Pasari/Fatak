@@ -8,12 +8,18 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
-from account.api.serializers import RegistrationSerializer, AccountPropertiesSerializer, ChangePasswordSerializer
+from account.api.serializers import RegistrationSerializer
 from account.models import Account
 from rest_framework.authtoken.models import Token
 
-# Register
-# Response: https://gist.github.com/mitchtabian/c13c41fa0f51b304d7638b7bac7cb694
+
+from random import choice, randrange
+from TestApp.models import Referral, ReferralCode
+from django.db.models import Sum
+from django.utils import timezone
+import datetime
+
+
 # Url: https://<your-domain>/api/account/register
 @api_view(['POST', ])
 @permission_classes([])
@@ -43,6 +49,30 @@ def registration_view(request):
 			data['email'] = account.email
 			data['username'] = account.username
 			data['pk'] = account.pk
+
+			ref_code = request.data.get('ref_code')
+
+			if(ref_code):
+				referralCode = ReferralCode.objects.get(referral_code= ref_code)
+				
+				five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
+				user_amount = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+				total_user_amount = Referral.objects.filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+                
+				if(user_amount is None):
+					user_amount = 0
+				
+				if(total_user_amount is None):
+					total_user_amount = 0
+
+				referrer_amount = 30 if user_amount < 150 else 0
+                
+				r = Referral(referrer = referralCode.referrer, 
+                            referee = account,
+                            referrer_amount = referrer_amount,
+                            referee_amount = randrange(50)
+                        )
+				r.save()
 			token = Token.objects.get(user=account).key
 			data['token'] = token
 		else:
@@ -68,50 +98,7 @@ def validate_username(username):
 		return username
 
 
-# Account properties
-# Response: https://gist.github.com/mitchtabian/4adaaaabc767df73c5001a44b4828ca5
-# Url: https://<your-domain>/api/account/
-# Headers: Authorization: Token <token>
-@api_view(['GET', ])
-@permission_classes((IsAuthenticated, ))
-def account_properties_view(request):
 
-	try:
-		account = request.user
-	except Account.DoesNotExist:
-		return Response(status=status.HTTP_404_NOT_FOUND)
-
-	if request.method == 'GET':
-		serializer = AccountPropertiesSerializer(account)
-		return Response(serializer.data)
-
-
-# Account update properties
-# Response: https://gist.github.com/mitchtabian/72bb4c4811199b1d303eb2d71ec932b2
-# Url: https://<your-domain>/api/account/properties/update
-# Headers: Authorization: Token <token>
-@api_view(['PUT',])
-@permission_classes((IsAuthenticated, ))
-def update_account_view(request):
-
-	try:
-		account = request.user
-	except Account.DoesNotExist:
-		return Response(status=status.HTTP_404_NOT_FOUND)
-		
-	if request.method == 'PUT':
-		serializer = AccountPropertiesSerializer(account, data=request.data)
-		data = {}
-		if serializer.is_valid():
-			serializer.save()
-			data['response'] = 'Account update success'
-			return Response(data=data)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-# LOGIN
-# Response: https://gist.github.com/mitchtabian/8e1bde81b3be342853ddfcc45ec0df8a
 # URL: http://127.0.0.1:8000/api/account/login
 class ObtainAuthTokenView(APIView):
 
@@ -138,56 +125,3 @@ class ObtainAuthTokenView(APIView):
 			context['error_message'] = 'Invalid credentials'
 
 		return Response(context)
-
-
-
-
-@api_view(['GET', ])
-@permission_classes([])
-@authentication_classes([])
-def does_account_exist_view(request):
-
-	if request.method == 'GET':
-		email = request.GET['email'].lower()
-		data = {}
-		try:
-			account = Account.objects.get(email=email)
-			data['response'] = email
-		except Account.DoesNotExist:
-			data['response'] = "Account does not exist"
-		return Response(data)
-
-
-
-class ChangePasswordView(UpdateAPIView):
-
-	serializer_class = ChangePasswordSerializer
-	model = Account
-	permission_classes = (IsAuthenticated,)
-	authentication_classes = (TokenAuthentication,)
-
-	def get_object(self, queryset=None):
-		obj = self.request.user
-		return obj
-
-	def update(self, request, *args, **kwargs):
-		self.object = self.get_object()
-		serializer = self.get_serializer(data=request.data)
-
-		if serializer.is_valid():
-			# Check old password
-			if not self.object.check_password(serializer.data.get("old_password")):
-				return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-
-			# confirm the new passwords match
-			new_password = serializer.data.get("new_password")
-			confirm_new_password = serializer.data.get("confirm_new_password")
-			if new_password != confirm_new_password:
-				return Response({"new_password": ["New passwords must match"]}, status=status.HTTP_400_BAD_REQUEST)
-
-			# set_password also hashes the password that the user will get
-			self.object.set_password(serializer.data.get("new_password"))
-			self.object.save()
-			return Response({"response":"successfully changed password"}, status=status.HTTP_200_OK)
-
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
