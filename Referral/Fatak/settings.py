@@ -42,11 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'TestApp.apps.TestappConfig',
+    'account',
     'rest_framework',                               # Need to add DRF
 ]
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
     
     # Check this
     'DEFAULT_PERMISSION_CLASSES': [
@@ -85,6 +90,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL = 'account.Account'                     # Need to add this for custom user model
 
 WSGI_APPLICATION = 'Fatak.wsgi.application'
 

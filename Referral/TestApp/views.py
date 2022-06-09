@@ -12,9 +12,27 @@ import datetime
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+from .serializers import ReferralCodeSerializer, UserSerializer, ReferralSerializer
 
-from .serializers import ReferralCodeSerializer, UserSerializer
+# FOR JWT - Login, Logout
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+
+        return token
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 # Create your views here.
 def home(request):
@@ -142,18 +160,51 @@ def getReferralCode(request):
 
 @api_view(['GET'])
 def api_get_referral_code(request, user):
-    referralCode = ReferralCode.objects.get(referrer=user)
-    serializer = ReferralCodeSerializer(instance=referralCode)
+    try:
+        referralCode = ReferralCode.objects.get(referrer=user)
+        serializer = ReferralCodeSerializer(instance=referralCode)
+        
+        return Response(serializer.data)
+    except ReferralCode.DoesNotExist:
+        return Response(status = status.HTTP_404_NOT_FOUND)
+
+
+
+@api_view(['GET'])
+def api_get_referral(request, referee):
+    try:
+        referral = Referral.objects.get(referee=referee)
+        serializer = ReferralSerializer(instance=referral)
+        return Response(serializer.data)
+    except:
+        response = {
+                "referee": referee,
+                "referrer_amount": 0,
+                "referee_amount": 0,
+                "referrer": None
+                }
+        return Response(response)
+
+
+@api_view(['GET'])
+def api_get_referrer_stats(request, referrer):
+    #try:   
+        five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
+        amount_earned__current_month = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+        if(amount_earned__current_month is None):
+            amount_earned__current_month = 0
+        total_amount_earned = Referral.objects.filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+        if(total_amount_earned is None):
+            total_amount_earned = 0
+                
+
+        #serializer = ReferralSerializer(instance=referral)
+        return Response({'amount_earned__current_month': amount_earned__current_month,
+                        'total_amount_earned': total_amount_earned})
+    #except Referral.DoesNotExist:
+    #    return Response(status = status.HTTP_404_NOT_FOUND)
     
-    return Response(serializer.data)
-    #return Response({'referral_code' : referralCode.referral_code,
-    #                'referrer_id' : referralCode.referrer,
-     #               })
-
-
-
-
-
+    
 #########################################################################################
 ############################# END OF  APIs ##############################################
 #########################################################################################
