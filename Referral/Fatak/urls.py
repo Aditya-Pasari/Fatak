@@ -25,4 +25,6 @@ urlpatterns = [
 
     # REST-framework
     path('api/account/', include('account.api.urls', 'account_api')),
-]
+    path('api/referral/', include('TestApp.api.urls', 'TestApp_api')),
+
+    ]

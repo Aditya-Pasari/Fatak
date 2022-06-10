@@ -13,7 +13,10 @@
             <!-- Logged In -->
             {% if request.user.is_authenticated %}
             <div class="header__user">
-                
+                <div>
+                    <a href="{% url 'makeTransaction' %}" > Make Transaction </a>
+                </div>
+
                 <div>
                     <a href="{% url 'getReferralCode' %}" > Get Ref Code </a>
                 </div>

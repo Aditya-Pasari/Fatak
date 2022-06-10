@@ -15,7 +15,8 @@ class Referral(models.Model):
     referrer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
     referee  = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     referrer_amount = models.IntegerField()
-    referee_amount = models.IntegerField()                                    # Select random amount upto Rs 50
+    referee_amount = models.IntegerField()                           # Select random amount upto Rs 50
+    first_transaction = models.BooleanField(default=False)                             
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

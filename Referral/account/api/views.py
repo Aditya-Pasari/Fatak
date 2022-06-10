@@ -1,11 +1,7 @@
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.generics import UpdateAPIView
 from django.contrib.auth import authenticate
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
 from account.api.serializers import RegistrationSerializer
@@ -13,7 +9,7 @@ from account.models import Account
 from rest_framework.authtoken.models import Token
 
 
-from random import choice, randrange
+from random import randrange
 from TestApp.models import Referral, ReferralCode
 from django.db.models import Sum
 from django.utils import timezone
@@ -24,7 +20,7 @@ import datetime
 @api_view(['POST', ])
 @permission_classes([])
 @authentication_classes([])
-def registration_view(request):
+def registration_view(request, ref_code = None):
 
 	if request.method == 'POST':
         #print("Entering register API")
@@ -50,22 +46,26 @@ def registration_view(request):
 			data['username'] = account.username
 			data['pk'] = account.pk
 
-			ref_code = request.data.get('ref_code')
+			if(ref_code is None):
+				ref_code = request.data.get('ref_code')
 
 			if(ref_code):
 				referralCode = ReferralCode.objects.get(referral_code= ref_code)
 				
 				five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
-				user_amount = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-				total_user_amount = Referral.objects.filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+				#user_amount = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+				#total_user_amount = Referral.objects.filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
                 
-				if(user_amount is None):
-					user_amount = 0
+				#if(user_amount is None):
+				#	user_amount = 0
 				
-				if(total_user_amount is None):
-					total_user_amount = 0
+				#if(total_user_amount is None):
+				#	total_user_amount = 0
 
-				referrer_amount = 30 if user_amount < 150 else 0
+				#referrer_amount = 30 if user_amount < 150 else 0
+
+				user_count = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).count()
+				referrer_amount = randrange(50) if user_count < 5 else 0
                 
 				r = Referral(referrer = referralCode.referrer, 
                             referee = account,
@@ -78,6 +78,15 @@ def registration_view(request):
 		else:
 			data = serializer.errors
 		return Response(data)
+
+@api_view(['POST', ])
+@permission_classes([])
+@authentication_classes([])
+def registration_ref_code_view(request, ref_code):
+
+	print("Entering here")
+	return Response({"message" : "success", "ref_code" : ref_code})
+
 
 def validate_email(email):
 	account = None

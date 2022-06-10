@@ -19,11 +19,8 @@ urlpatterns = [
     path('logout/', views.logoutUser, name="logout"),
 
     path('get_ref_code/', views.getReferralCode, name="getReferralCode"),
+    path('make_transaction/', views.makeTransaction, name="makeTransaction"),
 
-    path('api/get_referral_code/<str:user>/', views.api_get_referral_code, name='api_get_referral_code'),
-    path('api/get_referral/<str:referee>/', views.api_get_referral, name='api_get_referral'),
-    path('api/get_referrer_stats/<str:referrer>/', views.api_get_referrer_stats, name='api_get_referrer_stats'),
-    path('api/get_all_referrers/', views.api_get_all_referrers, name='api_get_all_referrers'),
 
     # Token URLS
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -6,10 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 import string
 from random import choice, randrange
 from TestApp.models import Referral, ReferralCode
-from django.db.models import Sum
-from django.utils import timezone
-import datetime
-import json 
+
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -147,90 +144,29 @@ def getReferralCode(request):
         r = ReferralCode(referrer = request.user, referral_code = referral_code)
         r.save()
         messages.success(request, "Your new Referral Code is : " + referral_code)
-
-
-
    
     return redirect('home')
 
 
-
-
-
-#########################################################################################
-################################# APIs ##################################################
-#########################################################################################
-
-@api_view(['GET'])
-def api_get_referral_code(request, user):
+def makeTransaction(request):
+    user = request.user
+    print(user.id)
+    print("Made first transaction")
     try:
-        referralCode = ReferralCode.objects.get(referrer=user)
-        serializer = ReferralCodeSerializer(instance=referralCode)
+        print("User = " + str(user))
+        r = Referral.objects.get(referee = str(user.id))
         
-        return Response(serializer.data)
-    except ReferralCode.DoesNotExist:
-        return Response(status = status.HTTP_404_NOT_FOUND)
-
-
-
-@api_view(['GET'])
-def api_get_referral(request, referee):
-    try:
-        referral = Referral.objects.get(referee=referee)
-        serializer = ReferralSerializer(instance=referral)
-        return Response(serializer.data)
+        if(not r.first_transaction):
+            
+            r.first_transaction = True
+            
+            r.save() 
     except:
-        response = {
-                "referee": referee,
-                "referrer_amount": 0,
-                "referee_amount": 0,
-                "referrer": None
-                }
-        return Response(response)
+        print("User didnt use referral")
+    #referral = Referral.objects.get(referee = user)
 
+    return redirect('home')
 
-@api_view(['GET'])
-@permission_classes((IsAuthenticated,))
-def api_get_referrer_stats(request, referrer):
-    #try:   
-        five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
-        amount_earned__current_month = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-        if(amount_earned__current_month is None):
-            amount_earned__current_month = 0
-        total_amount_earned = Referral.objects.filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-        if(total_amount_earned is None):
-            total_amount_earned = 0
- 
-        return Response({'amount_earned__current_month': amount_earned__current_month,
-                        'total_amount_earned': total_amount_earned})
-    
-
-@api_view(['GET'])
-@permission_classes((IsAuthenticated,))
-def api_get_all_referrers(request):
-    queryset = Referral.objects.all()
-    serializer = ReferralSerializer(queryset, many = True)
-
-    all_users = {}
-
-    for q in queryset:
-        if(q.referrer.id in all_users):
-            all_users[q.referrer.id]['users_registered'] += 1
-            all_users[q.referrer.id]['total_amount'] += q.referrer_amount
-        else:
-            all_users[q.referrer.id] = {}
-            all_users[q.referrer.id]['users_registered'] = 1
-            all_users[q.referrer.id]['total_amount'] = q.referrer_amount
-
-    response_dict = dict(sorted(all_users.items(), key=lambda item: -item[1]['users_registered']))
-
-
-    return JsonResponse(response_dict)
-    
-    
-#########################################################################################
-############################# END OF  APIs ##############################################
-#########################################################################################
 
 
 
