@@ -11,10 +11,10 @@ from TestApp.serializers import ReferralCodeSerializer, ReferralSerializer
 
 from django.db.models import Sum
 from django.utils import timezone
-import datetime
+import datetime, string
+from random import choice
 
-
-
+from account.models import Account
 
 #########################################################################################
 ################################# APIs ##################################################
@@ -24,13 +24,19 @@ import datetime
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def api_get_referral_code(request, user):
-    try:
-        referralCode = ReferralCode.objects.get(referrer=user)
-        serializer = ReferralCodeSerializer(instance=referralCode)
+    if(ReferralCode.objects.filter(referrer=user).exists()):
+        r  = ReferralCode.objects.get(referrer=user)
+    else:
+        ref_code = ''.join(choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+        account_user = Account.objects.get(pk = user)
+        r = ReferralCode(referrer = account_user, referral_code = ref_code)
+        r.save()
         
-        return Response(serializer.data)
-    except ReferralCode.DoesNotExist:
-        return Response(status = status.HTTP_404_NOT_FOUND)
+    serializer = ReferralCodeSerializer(instance=r)
+        
+    return Response(serializer.data)
+
+        
 
 
 
@@ -64,14 +70,17 @@ def api_get_referral(request, referee):
 def api_get_referrer_stats(request, referrer):
     #try:   
         five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
-        amount_earned__current_month = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-        if(amount_earned__current_month is None):
-            amount_earned__current_month = 0
+        amount_earned_current_month = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+        
+        if(amount_earned_current_month is None):
+            amount_earned_current_month = 0
+        
         total_amount_earned = Referral.objects.filter(referrer=referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+
         if(total_amount_earned is None):
             total_amount_earned = 0
  
-        return Response({'amount_earned__current_month': amount_earned__current_month,
+        return Response({'amount_earned_current_month': amount_earned_current_month,
                         'total_amount_earned': total_amount_earned})
     
 

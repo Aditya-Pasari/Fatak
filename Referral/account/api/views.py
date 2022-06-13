@@ -23,7 +23,6 @@ import datetime
 def registration_view(request, ref_code = None):
 
 	if request.method == 'POST':
-        #print("Entering register API")
 		data = {}
 		email = request.data.get('email', '0').lower()
 		if validate_email(email) != None:
@@ -40,52 +39,56 @@ def registration_view(request, ref_code = None):
 		serializer = RegistrationSerializer(data=request.data)
 		
 		if serializer.is_valid():
-			account = serializer.save()
-			data['response'] = 'successfully registered new user.'
-			data['email'] = account.email
-			data['username'] = account.username
-			data['pk'] = account.pk
 
 			if(ref_code is None):
 				ref_code = request.data.get('ref_code')
 
 			if(ref_code):
-				referralCode = ReferralCode.objects.get(referral_code= ref_code)
+				if(ReferralCode.objects.filter(referral_code= ref_code).exists()):
+					referralCode = ReferralCode.objects.get(referral_code= ref_code)
 				
-				five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)
-				#user_amount = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-				#total_user_amount = Referral.objects.filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
-                
-				#if(user_amount is None):
-				#	user_amount = 0
+					five_minutes_ago = timezone.now() + datetime.timedelta(minutes=-5)		# For checking how many referee's used referrers code this month
+					user_amount = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
 				
-				#if(total_user_amount is None):
-				#	total_user_amount = 0
+					if(user_amount is None):
+						user_amount = 0
+					referrer_amount = 30 if user_amount < 150 else 0
 
-				#referrer_amount = 30 if user_amount < 150 else 0
+					# NOT REQUIRED HERE
+					#total_user_amount = Referral.objects.filter(referrer=referralCode.referrer).aggregate(Sum('referrer_amount'))['referrer_amount__sum']
+					#if(total_user_amount is None):
+					#	total_user_amount = 0
 
-				user_count = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).count()
-				referrer_amount = randrange(50) if user_count < 5 else 0
-                
-				r = Referral(referrer = referralCode.referrer, 
+					# USE THIS when want to randomize amount received by REFERRER too.
+					#user_count = Referral.objects.filter(created__gte=five_minutes_ago).filter(referrer=referralCode.referrer).count()
+					#referrer_amount = randrange(50) if user_count < 5 else 0
+					account = serializer.save()
+					data['message'] = 'Successfully registered new user with referral code.'
+
+					r = Referral(referrer = referralCode.referrer, 
                             referee = account,
                             referrer_amount = referrer_amount,
                             referee_amount = randrange(50)
                         )
-				r.save()
+					r.save()	
+				else:
+					data['response'] = 'Error'
+					data['error_message'] = 'Referral code is incorrect. Please enter correct referral code.'
+					return Response(data)
+			else:
+				account = serializer.save()
+				data['message'] = 'Successfully registered new user without referral code.'
+				
+			
+			data['email'] = account.email
+			data['username'] = account.username
+			data['pk'] = account.pk
+
 			token = Token.objects.get(user=account).key
 			data['token'] = token
 		else:
 			data = serializer.errors
 		return Response(data)
-
-@api_view(['POST', ])
-@permission_classes([])
-@authentication_classes([])
-def registration_ref_code_view(request, ref_code):
-
-	print("Entering here")
-	return Response({"message" : "success", "ref_code" : ref_code})
 
 
 def validate_email(email):
