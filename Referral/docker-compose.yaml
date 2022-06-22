@@ -14,7 +14,7 @@ services:
   db:
     image: mysql:5.7
     environment:
-      MYSQL_DATABASE : 'django-app-db-fatak'
+      MYSQL_DATABASE : 'django_app_db_fatak'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
     volumes:
       - ./data/mysql/dbb:/var/lib/mysql

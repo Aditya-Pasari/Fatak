@@ -113,7 +113,7 @@ WSGI_APPLICATION = 'Fatak.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -126,7 +126,7 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django-app-db-fatak',
+        'NAME': 'django_app_db_fatak',
         'USER': 'root',
         'PASSWORD': '',
         'HOST':'db',
@@ -134,7 +134,7 @@ DATABASES = {
     }
 }
 
-"""
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
