@@ -26,14 +26,14 @@ def registration_view(request, ref_code = None):
 		data = {}
 		email = request.data.get('email', '0').lower()
 		if validate_email(email) != None:
-			data['error_message'] = 'That email is already in use.'
-			data['response'] = 'Error'
+			data['success'] = False
+			data['message'] = 'That email is already in use.'
 			return Response(data)
 
 		username = request.data.get('username', '0')
 		if validate_username(username) != None:
-			data['error_message'] = 'That username is already in use.'
-			data['response'] = 'Error'
+			data['success'] = False
+			data['message'] = 'That username is already in use.'
 			return Response(data)
 
 		serializer = RegistrationSerializer(data=request.data)
@@ -72,8 +72,8 @@ def registration_view(request, ref_code = None):
                         )
 					r.save()	
 				else:
-					data['response'] = 'Error'
-					data['error_message'] = 'Referral code is incorrect. Please enter correct referral code.'
+					data['success'] = False
+					data['message'] = 'Referral code is incorrect. Please enter correct referral code.'
 					return Response(data)
 			else:
 				account = serializer.save()

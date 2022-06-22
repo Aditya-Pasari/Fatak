@@ -14,6 +14,10 @@
             {% if request.user.is_authenticated %}
             <div class="header__user">
                 <div>
+                    <a href="{% url 'razorpay_page' %}" > Razorpay </a>
+                </div>
+
+                <div>
                     <a href="{% url 'makeTransaction' %}" > Make Transaction </a>
                 </div>
 

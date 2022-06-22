@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Create Customer Form</h1>
+
+<form class="form-signin" method="post">{% csrf_token %}
+    
+    
+    <input type="text" name="name" id="fullName" class="form-control" placeholder="Enter Full name" required style="width:50%">
+    <input type="text" name="phoneno" id="phoneNo" class="form-control" placeholder="Enter Contact Number" required style="width:50%">
+    <input type="text" name="email" id="emailID" class="form-control" placeholder="Enter e-mail ID" required style="width:50%">
+    <input type="number" name="amount" id="amount" class="form-control" placeholder="Amount to be paid"  style="width:50%">  
+
+    
+    <input type="text" name="note1" id="note1" class="form-control" placeholder="Enter Notes"  style="width:50%">  
+    <input type="text" name="note2" id="note2" class="form-control" placeholder="Enter Additional Notes"  style="width:50%">  
+    
+    
+      
+      <button class="btn btn-lg btn-primary " type="submit">Register</button>
+    
+    </form>
+    
+
+{% endblock content %}

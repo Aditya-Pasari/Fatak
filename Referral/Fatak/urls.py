@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('TestApp.urls')),
     path('', include('account.urls')),
+    path('', include('payment.urls')),
 
     # REST-framework
     path('api/account/', include('account.api.urls', 'account_api')),

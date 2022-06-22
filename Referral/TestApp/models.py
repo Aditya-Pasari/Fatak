@@ -12,10 +12,10 @@ class ReferralCode(models.Model):
 
 
 class Referral(models.Model):
-    referrer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
-    referee  = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-    referrer_amount = models.IntegerField()
-    referee_amount = models.IntegerField()                           # Select random amount upto Rs 50
+    referrer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='referrer')
+    referee  = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True, related_name='referee')
+    referrer_amount = models.IntegerField(blank = False)
+    referee_amount = models.IntegerField(blank = False)                           # Select random amount upto Rs 50
     first_transaction = models.BooleanField(default=False)                             
 
     created = models.DateTimeField(auto_now_add=True)

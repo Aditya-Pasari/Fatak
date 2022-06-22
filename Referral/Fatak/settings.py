@@ -28,8 +28,12 @@ SECRET_KEY = 'django-insecure-!8%%y3b^0b#zz46#+=9i=hk3#u50&&b(!3sgx-y&gg3iuhf8^o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', '0.0.0.0:8000', '127.0.0.1', 'localhost']
 
+
+
+YOUR_API_KEY = 'rzp_test_dykeXzdoFsz408'
+YOUR_API_SECRET = 'FS2E4Ef0fnb6dVk7KlIQXhp6'
 
 # Application definition
 
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
 
     'TestApp.apps.TestappConfig',
     'account',
+    'payment',
     'rest_framework',                               # Need to add DRF
     'rest_framework.authtoken',
     'rest_framework_swagger',
@@ -108,6 +113,7 @@ WSGI_APPLICATION = 'Fatak.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -115,6 +121,20 @@ DATABASES = {
     }
 }
 
+
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'django-app-db-fatak',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST':'db',
+        'POST':'3306',
+    }
+}
+
+"""
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

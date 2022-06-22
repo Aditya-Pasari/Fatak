@@ -1,0 +1,36 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Create Customer Form</h1>
+
+<button id = "rzp-button1"> Pay </button>
+  <script src = "https://checkout.razorpay.com/v1/checkout.js"> </script>
+  <script>
+    var options = {
+      "key": "{{key}}",
+      "order_id": "{{order_id}}",
+      "customer_id": "{{customer_id}}",
+      "recurring": "0",
+      "handler": function (response) {
+        alert(response.razorpay_payment_id);
+        alert(response.razorpay_order_id);
+        alert(response.razorpay_signature);
+      },
+      "notes": {
+        "note_key 1": "Beam me up Scotty",
+        "note_key 2": "Tea. Earl Gray. Hot."
+      },
+      "theme": {
+        "color": "#F37254"
+      }
+    };
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function (e) {
+      rzp1.open();
+      e.preventDefault();
+    }
+  </script>
+
+  {% endblock content %}

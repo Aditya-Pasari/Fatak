@@ -34,7 +34,13 @@ def api_get_referral_code(request, user):
         
     serializer = ReferralCodeSerializer(instance=r)
         
-    return Response(serializer.data)
+    return Response({
+                    'success': True,
+                    'status_code': status.HTTP_200_OK,
+                    'message': 'Referral code sent successfully',
+                    'data': serializer.data
+                    },
+                    status = status.HTTP_200_OK)
 
         
 
@@ -46,23 +52,33 @@ def api_get_referral(request, referee):
     try:
         referral = Referral.objects.get(referee=referee)
         
-        created_time = referral.created
-        updated_time = referral.updated
-
-
-        timediff = (updated_time - created_time)
-        timediff_hours = round(timediff.total_seconds()/(60*60),1)
-        print("Time for first transaction = " + str(timediff_hours))
+        #created_time = referral.created
+        #updated_time = referral.updated
+        #timediff = (updated_time - created_time)
+        #timediff_hours = round(timediff.total_seconds()/(60*60),1)
+        #print("Time for first transaction = " + str(timediff_hours))
         serializer = ReferralSerializer(instance=referral)
-        return Response(serializer.data)
+        return Response({
+                    'success': True,
+                    'status_code': status.HTTP_200_OK,
+                    'message': 'Referral sent successfully',
+                    'data': serializer.data
+                    },
+                    status = status.HTTP_200_OK)
     except:
-        response = {
+        data = {
                 "referee": referee,
                 "referrer_amount": 0,
                 "referee_amount": 0,
                 "referrer": None
                 }
-        return Response(response)
+        return Response({
+                    'success': False,
+                    'status_code': status.HTTP_400_BAD_REQUEST,
+                    'message': "User didn't use referral code",
+                    'data': data
+                    },
+                    status = status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -79,9 +95,16 @@ def api_get_referrer_stats(request, referrer):
 
         if(total_amount_earned is None):
             total_amount_earned = 0
- 
-        return Response({'amount_earned_current_month': amount_earned_current_month,
-                        'total_amount_earned': total_amount_earned})
+
+        data = {'amount_earned_current_month': amount_earned_current_month,
+                        'total_amount_earned': total_amount_earned}
+        return Response({
+                    'success': True,
+                    'status_code': status.HTTP_200_OK,
+                    'message': 'Referrer stats sent successfully',
+                    'data': data
+                    },
+                    status = status.HTTP_200_OK)
     
 
 @api_view(['GET'])
@@ -126,9 +149,21 @@ def api_make_transaction(request, referee):
         if(not r.first_transaction):    
             r.first_transaction = True
             r.save() 
-        return Response({'message':'User successfully carried out first transaction'})
+        return Response({
+                    'success': True,
+                    'status_code': status.HTTP_200_OK,
+                    'message': 'User successfully carried out first transaction',
+                    'data': None,
+                    },
+                    status = status.HTTP_200_OK)
     except:
-        return Response({'message':'User didnt use Referral Code'})
+        return Response({
+                    'success': False,
+                    'status_code': status.HTTP_400_BAD_REQUEST,
+                    'message': 'User didnt use Referral Code',
+                    'data': None,
+                    },
+                    status = status.HTTP_400_BAD_REQUEST)
 
 
 #########################################################################################
